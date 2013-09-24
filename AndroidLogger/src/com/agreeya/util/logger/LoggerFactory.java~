@@ -1,0 +1,57 @@
+package  com.agreeya.util.logger;
+
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class LoggerFactory {
+
+	public static Logger Log;
+	private static ConsoleLogHandler logHandler;
+	// Global constants to give programmer choice to add if condition before
+	// logging a code.
+	public static boolean FINE;
+	public static boolean INFO;
+	public static boolean WARN;
+
+	// initialise the logger for iPod App Module
+	public static void init(String version, String globalDebugLevel,
+			String appDebugLevel) {
+
+		Log = Logger.getLogger(version);
+
+		// debug level settings
+		Level debuglevel = LogLevel.setDebugLevel(globalDebugLevel,
+				appDebugLevel);
+		if (debuglevel.equals(Level.ALL) || debuglevel.equals(Level.FINE)
+				|| debuglevel.equals(Level.FINER)
+				|| debuglevel.equals(Level.FINEST)) {
+			FINE = INFO = WARN = true;
+		} else if (debuglevel.equals(Level.INFO)) {
+			INFO = WARN = true;
+		} else if (debuglevel.equals(Level.WARNING)) {
+			WARN = true;
+		}
+		Log.setLevel(debuglevel);
+
+		// logger send its msg to several handlers by default, we have to
+		// disable that
+		Log.setUseParentHandlers(false);
+
+		// avoid recreation of handler in case activities onCreate() is called
+		// again but logHandler is not
+		// garbage collected
+		if (logHandler == null)
+			logHandler = new ConsoleLogHandler();
+
+		// remove previously assigned handlers. This is very important and
+		// failing to do so may result in
+		// duplication of same logs
+		for (Handler handler : Log.getHandlers())
+			Log.removeHandler(handler);
+
+		// set this loggers handler and make sure that only one instance is
+		// associated with it
+		Log.addHandler(logHandler);
+	}
+}
